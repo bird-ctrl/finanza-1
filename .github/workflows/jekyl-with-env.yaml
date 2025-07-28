@@ -32,8 +32,9 @@ jobs:
           source: ./
           destination: ./_site
 
-      - name: Add Gemini key to client config.js
+      - name: Write Gemini key to config.js
         run: |
+          mkdir -p ./_site
           echo "window.CONFIG = { GEMINI_API_KEY: '${GEMINI_API_KEY}' };" > ./_site/config.js
 
       - name: Upload artifact
