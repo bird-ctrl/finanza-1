@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Finanzas - AI-powered financial literacy coach for Indian youth">
+    <meta name="theme-color" content="#1d8db8">
+    <title>Finanzas - Financial Literacy Coach</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" id="manifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMxZDhkYjgiLz4KPHA+Cjx0ZXh0IHg9Ijk2IiB5PSI5NiIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjQ4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuKCuTwvdGV4dD4KPC9zdmc+">
+    
+    <!-- PWA Manifest inline -->
+    <script>
+        const manifest = {
+            "name": "Finanzas - Financial Literacy Coach",
+            "short_name": "Finanzas",
+            "description": "AI-powered financial literacy coach for Indian youth",
+            "start_url": "./",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#1d8db8",
+            "icons": [
+                {
+                    "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMxZDhkYjgiLz4KPHRleHQgeD0iOTYiIHk9Ijk2IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDgiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+4oK5PC90ZXh0Pgo8L3N2Zz4K",
+                    "sizes": "192x192",
+                    "type": "image/svg+xml"
+                }
+            ]
+        };
+        
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        document.getElementById('manifest').href = manifestURL;
+    </script>
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div id="splash" class="splash">
+        <div class="splash-content">
+            <div class="logo">₹</div>
+            <h1>Finanzas</h1>
+            <p data-i18n="loading">Loading your financial coach...</p>
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <main id="app" class="app hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <span class="logo-small">₹</span>
+                    Finanzas
+                </h1>
+                <div class="header-controls">
+                    <select id="languageSelect" class="form-control lang-select" aria-label="Select Language">
+                        <option value="en">EN</option>
+                        <option value="hi">हिं</option>
+                    </select>
+                    <button id="themeToggle" class="btn btn--secondary btn--sm" aria-label="Toggle theme">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                    <button id="settingsBtn" class="btn btn--secondary btn--sm" aria-label="Settings">
+                        ⚙️
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Quick Replies -->
+        <div id="quickReplies" class="quick-replies">
+            <div class="quick-replies-container">
+                <!-- Quick reply buttons will be generated here -->
+            </div>
+        </div>
+
+        <!-- Chat Window -->
+        <div class="chat-container">
+            <ul id="chatLog" class="chat-log">
+                <!-- Chat messages will appear here -->
+            </ul>
+            
+            <!-- Typing Indicator -->
+            <div id="typingIndicator" class="typing-indicator hidden">
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span data-i18n="ai_typing">AI is typing...</span>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <div class="input-container">
+                <textarea 
+                    id="userInput" 
+                    class="form-control input-field" 
+                    placeholder="Ask about investments, taxes, insurance..."
+                    data-i18n-placeholder="input_placeholder"
+                    rows="1"
+                    maxlength="1000"
+                ></textarea>
+                <div class="input-controls">
+                    <button id="micBtn" class="btn btn--secondary mic-btn" aria-label="Voice input">
+                        🎤
+                    </button>
+                    <button id="sendBtn" class="btn btn--primary send-btn" aria-label="Send message">
+                        ➤
+                    </button>
+                </div>
+            </div>
+            <div class="rate-limit-indicator">
+                <span id="rateLimitText" data-i18n="rate_limit">3 requests remaining</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 data-i18n="settings_title">Settings</h2>
+                <button id="closeSettings" class="btn btn--secondary btn--sm">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- Voice Settings -->
+                <div class="form-group">
+                    <label class="form-label" data-i18n="voice_rate">Voice Rate</label>
+                    <input type="range" id="voiceRate" class="form-control" min="0.5" max="2" step="0.1" value="1">
+                    <span id="voiceRateValue">1.0</span>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" data-i18n="voice_pitch">Voice Pitch</label>
+                    <input type="range" id="voicePitch" class="form-control" min="0.5" max="2" step="0.1" value="1">
+                    <span id="voicePitchValue">1.0</span>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" data-i18n="voice_volume">Voice Volume</label>
+                    <input type="range" id="voiceVolume" class="form-control" min="0.1" max="1" step="0.1" value="1">
+                    <span id="voiceVolumeValue">1.0</span>
+                </div>
+
+                <!-- API Key Override -->
+                <div class="form-group">
+                    <label class="form-label" data-i18n="api_key_override">API Key Override (Optional)</label>
+                    <input type="password" id="apiKeyOverride" class="form-control" placeholder="Enter your Gemini API key">
+                    <small class="form-help" data-i18n="api_key_help">This will override the environment key for this session only</small>
+                </div>
+
+                <!-- Export Chat -->
+                <div class="form-group">
+                    <button id="exportChat" class="btn btn--outline btn--full-width" data-i18n="export_chat">
+                        Export Chat History
+                    </button>
+                </div>
+
+                <!-- Clear Chat -->
+                <div class="form-group">
+                    <button id="clearChat" class="btn btn--outline btn--full-width" data-i18n="clear_chat">
+                        Clear Chat History
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container">
+        <!-- Toast messages will appear here -->
+    </div>
+
+    <!-- Install PWA Prompt -->
+    <div id="installPrompt" class="install-prompt hidden">
+        <div class="install-content">
+            <span data-i18n="install_app">Install Finanzas for better experience</span>
+            <div class="install-actions">
+                <button id="installBtn" class="btn btn--primary btn--sm" data-i18n="install">Install</button>
+                <button id="dismissInstall" class="btn btn--secondary btn--sm" data-i18n="dismiss">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(() => console.log('SW registered'))
+                    .catch(() => console.log('SW registration failed'));
+            });
+        }
+    </script>
+</body>
+</html>
