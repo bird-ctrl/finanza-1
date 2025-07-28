@@ -2,7 +2,7 @@
 window.CONFIG = {
   GEMINI_API_KEY: 'your-api-key-here'
 };
-
+const API_KEY = process.env.GEMINI_API_KEY
 // main.js - Your application code
 const API_KEY = window.CONFIG.GEMINI_API_KEY;
 
