@@ -1,6 +1,6 @@
 // Finanzas AI - Indian Finance Coach Application
 // Complete JavaScript functionality with voice, themes, rate limiting, and more
-
+const API_KEY = process.env.GEMINI_API_KEY
 class FinanzasAI {
     constructor() {
         this.config = {
