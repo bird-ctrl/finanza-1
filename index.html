@@ -3,202 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Finanzas - AI-powered financial literacy coach for Indian youth">
-    <meta name="theme-color" content="#1d8db8">
-    <title>Finanzas - Financial Literacy Coach</title>
+    <title>Finanzas AI - Indian Finance Coach</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="manifest" id="manifest">
-    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMxZDhkYjgiLz4KPHA+Cjx0ZXh0IHg9Ijk2IiB5PSI5NiIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjQ4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuKCuTwvdGV4dD4KPC9zdmc+">
-    <script src="/assets/config.js"></script>
-
-    <!-- PWA Manifest inline -->
-    <script>
-        const manifest = {
-            "name": "Finanzas - Financial Literacy Coach",
-            "short_name": "Finanzas",
-            "description": "AI-powered financial literacy coach for Indian youth",
-            "start_url": "./",
-            "display": "standalone",
-            "background_color": "#ffffff",
-            "theme_color": "#1d8db8",
-            "icons": [
-                {
-                    "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMxZDhkYjgiLz4KPHRleHQgeD0iOTYiIHk9Ijk2IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDgiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+4oK5PC90ZXh0Pgo8L3N2Zz4K",
-                    "sizes": "192x192",
-                    "type": "image/svg+xml"
-                }
-            ]
-        };
-        
-        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-        const manifestURL = URL.createObjectURL(manifestBlob);
-        document.getElementById('manifest').href = manifestURL;
-    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="description" content="AI-powered financial advisor for Indian market - Investment, Tax Planning, Banking, Insurance guidance">
+    <meta name="keywords" content="Indian finance, SIP, mutual funds, tax planning, PPF, NPS, UPI, financial advisor">
 </head>
-<body>
+<body data-color-scheme="light">
     <!-- Splash Screen -->
-    <div id="splash" class="splash">
+    <div id="splash-screen" class="splash-screen">
         <div class="splash-content">
-            <div class="logo">₹</div>
-            <h1>Finanzas</h1>
-            <p data-i18n="loading">Loading your financial coach...</p>
-            <div class="spinner"></div>
+            <div class="logo-container">
+                <div class="logo-icon">₹</div>
+                <h1 class="logo-text">Finanzas AI</h1>
+            </div>
+            <p class="splash-tagline">Your Indian Finance Coach</p>
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+            </div>
         </div>
     </div>
 
-    <!-- Main App -->
-    <main id="app" class="app hidden">
+    <!-- Main Application -->
+    <div id="main-app" class="main-app hidden">
         <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1 class="app-title">
-                    <span class="logo-small">₹</span>
-                    Finanzas
-                </h1>
-                <div class="header-controls">
-                    <select id="languageSelect" class="form-control lang-select" aria-label="Select Language">
-                        <option value="en">EN</option>
-                        <option value="hi">हिं</option>
-                    </select>
-                    <button id="themeToggle" class="btn btn--secondary btn--sm" aria-label="Toggle theme">
-                        <span class="theme-icon">🌙</span>
-                    </button>
-                    <button id="settingsBtn" class="btn btn--secondary btn--sm" aria-label="Settings">
-                        ⚙️
-                    </button>
-                </div>
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo-mini">₹</div>
+                <h1 class="app-title">Finanzas AI</h1>
+            </div>
+            <div class="header-controls">
+                <button id="theme-toggle" class="control-btn" title="Toggle Theme" aria-label="Toggle Theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button id="language-toggle" class="control-btn" title="Switch Language" aria-label="Switch Language">
+                    <span class="lang-text">EN</span>
+                </button>
+                <button id="voice-toggle" class="control-btn" title="Toggle Voice" aria-label="Toggle Voice">
+                    <span class="voice-icon">🔊</span>
+                </button>
+                <button id="settings-btn" class="control-btn" title="Settings" aria-label="Settings">
+                    <span class="settings-icon">⚙️</span>
+                </button>
             </div>
         </header>
 
-        <!-- Quick Replies -->
-        <div id="quickReplies" class="quick-replies">
-            <div class="quick-replies-container">
-                <!-- Quick reply buttons will be generated here -->
+        <!-- Usage Tracker -->
+        <div class="usage-tracker">
+            <div class="usage-bar">
+                <div id="usage-fill" class="usage-fill"></div>
             </div>
+            <span id="usage-text" class="usage-text">0/30 queries today</span>
         </div>
 
-        <!-- Chat Window -->
-        <div class="chat-container">
-            <ul id="chatLog" class="chat-log">
-                <!-- Chat messages will appear here -->
-            </ul>
-            
-            <!-- Typing Indicator -->
-            <div id="typingIndicator" class="typing-indicator hidden">
-                <div class="typing-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+        <!-- Chat Container -->
+        <main class="chat-container">
+            <div id="chat-messages" class="chat-messages">
+                <div class="welcome-message">
+                    <div class="welcome-icon">🇮🇳</div>
+                    <h2>Welcome to Finanzas AI!</h2>
+                    <p>Your personal finance coach for Indian markets. Get expert advice on investments, tax planning, banking, insurance, and more.</p>
                 </div>
-                <span data-i18n="ai_typing">AI is typing...</span>
             </div>
-        </div>
+
+            <!-- Quick Response Buttons -->
+            <div class="quick-responses">
+                <button class="quick-btn" data-query="What is SIP and how to start?">SIP Basics</button>
+                <button class="quick-btn" data-query="Best tax-saving options under 80C">80C Options</button>
+                <button class="quick-btn" data-query="How to build emergency fund?">Emergency Fund</button>
+                <button class="quick-btn" data-query="PPF vs NPS comparison">PPF vs NPS</button>
+                <button class="quick-btn" data-query="Best mutual funds for beginners">Mutual Funds</button>
+                <button class="quick-btn" data-query="UPI safety tips">UPI Safety</button>
+            </div>
+        </main>
 
         <!-- Input Area -->
         <div class="input-area">
             <div class="input-container">
+                <button id="voice-input-btn" class="voice-btn" title="Voice Input" aria-label="Voice Input">
+                    <span class="voice-pulse"></span>
+                    🎤
+                </button>
                 <textarea 
-                    id="userInput" 
-                    class="form-control input-field" 
-                    placeholder="Ask about investments, taxes, insurance..."
-                    data-i18n-placeholder="input_placeholder"
+                    id="message-input" 
+                    class="message-input" 
+                    placeholder="Ask about SIP, tax planning, mutual funds, insurance..."
                     rows="1"
-                    maxlength="1000"
+                    maxlength="500"
                 ></textarea>
-                <div class="input-controls">
-                    <button id="micBtn" class="btn btn--secondary mic-btn" aria-label="Voice input">
-                        🎤
-                    </button>
-                    <button id="sendBtn" class="btn btn--primary send-btn" aria-label="Send message">
-                        ➤
-                    </button>
-                </div>
+                <button id="send-btn" class="send-btn" title="Send Message" aria-label="Send Message">
+                    <span class="send-icon">→</span>
+                </button>
             </div>
-            <div class="rate-limit-indicator">
-                <span id="rateLimitText" data-i18n="rate_limit">3 requests remaining</span>
+            <div class="input-footer">
+                <span class="char-counter">0/500</span>
+                <button id="export-btn" class="export-btn">Export Chat</button>
             </div>
         </div>
-    </main>
+    </div>
 
     <!-- Settings Modal -->
-    <div id="settingsModal" class="modal hidden">
-        <div class="modal-overlay"></div>
+    <div id="settings-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 data-i18n="settings_title">Settings</h2>
-                <button id="closeSettings" class="btn btn--secondary btn--sm">✕</button>
+                <h3>Settings</h3>
+                <button id="close-settings" class="close-btn">×</button>
             </div>
             <div class="modal-body">
-                <!-- Voice Settings -->
-                <div class="form-group">
-                    <label class="form-label" data-i18n="voice_rate">Voice Rate</label>
-                    <input type="range" id="voiceRate" class="form-control" min="0.5" max="2" step="0.1" value="1">
-                    <span id="voiceRateValue">1.0</span>
+                <div class="settings-group">
+                    <h4>Voice Settings</h4>
+                    <div class="setting-item">
+                        <label for="voice-rate">Speech Rate</label>
+                        <input type="range" id="voice-rate" min="0.5" max="2" step="0.1" value="1">
+                        <span id="rate-value">1.0</span>
+                    </div>
+                    <div class="setting-item">
+                        <label for="voice-pitch">Pitch</label>
+                        <input type="range" id="voice-pitch" min="0" max="2" step="0.1" value="1">
+                        <span id="pitch-value">1.0</span>
+                    </div>
+                    <div class="setting-item">
+                        <label for="voice-volume">Volume</label>
+                        <input type="range" id="voice-volume" min="0" max="1" step="0.1" value="0.8">
+                        <span id="volume-value">0.8</span>
+                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <label class="form-label" data-i18n="voice_pitch">Voice Pitch</label>
-                    <input type="range" id="voicePitch" class="form-control" min="0.5" max="2" step="0.1" value="1">
-                    <span id="voicePitchValue">1.0</span>
+                <div class="settings-group">
+                    <h4>Chat Settings</h4>
+                    <div class="setting-item">
+                        <label for="auto-scroll">Auto-scroll to new messages</label>
+                        <input type="checkbox" id="auto-scroll" checked>
+                    </div>
+                    <div class="setting-item">
+                        <label for="typing-sound">Typing sounds</label>
+                        <input type="checkbox" id="typing-sound" checked>
+                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <label class="form-label" data-i18n="voice_volume">Voice Volume</label>
-                    <input type="range" id="voiceVolume" class="form-control" min="0.1" max="1" step="0.1" value="1">
-                    <span id="voiceVolumeValue">1.0</span>
-                </div>
-
-                <!-- API Key Override -->
-                <div class="form-group">
-                    <label class="form-label" data-i18n="api_key_override">API Key Override (Optional)</label>
-                    <input type="password" id="apiKeyOverride" class="form-control" placeholder="Enter your Gemini API key">
-                    <small class="form-help" data-i18n="api_key_help">This will override the environment key for this session only</small>
-                </div>
-
-                <!-- Export Chat -->
-                <div class="form-group">
-                    <button id="exportChat" class="btn btn--outline btn--full-width" data-i18n="export_chat">
-                        Export Chat History
-                    </button>
-                </div>
-
-                <!-- Clear Chat -->
-                <div class="form-group">
-                    <button id="clearChat" class="btn btn--outline btn--full-width" data-i18n="clear_chat">
-                        Clear Chat History
-                    </button>
+                <div class="settings-group">
+                    <h4>Data Management</h4>
+                    <button id="clear-history" class="btn btn--outline">Clear Chat History</button>
+                    <button id="reset-usage" class="btn btn--outline">Reset Daily Usage</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Toast Container -->
-    <div id="toastContainer" class="toast-container">
-        <!-- Toast messages will appear here -->
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Voice Status Indicator -->
+    <div id="voice-status" class="voice-status hidden">
+        <div class="voice-animation">
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+        </div>
+        <span id="voice-status-text">Listening...</span>
     </div>
 
-    <!-- Install PWA Prompt -->
-    <div id="installPrompt" class="install-prompt hidden">
-        <div class="install-content">
-            <span data-i18n="install_app">Install Finanzas for better experience</span>
-            <div class="install-actions">
-                <button id="installBtn" class="btn btn--primary btn--sm" data-i18n="install">Install</button>
-                <button id="dismissInstall" class="btn btn--secondary btn--sm" data-i18n="dismiss">Dismiss</button>
-            </div>
-        </div>
+    <!-- Offline Indicator -->
+    <div id="offline-indicator" class="offline-indicator hidden">
+        <span>📵 Offline Mode - Limited functionality</span>
     </div>
+
+    <!-- Backend Proxy Server Code (for deployment) -->
+    <script type="application/json" id="backend-config">
+    {
+      "server_code": "// server.js - Deploy this as your backend proxy\nconst express = require('express');\nconst cors = require('cors');\nconst rateLimit = require('express-rate-limit');\nconst { GoogleGenerativeAI } = require('@google/generative-ai');\nrequire('dotenv').config();\n\nconst app = express();\nconst PORT = process.env.PORT || 3001;\n\n// Initialize Gemini AI\nconst genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);\nconst model = genAI.getGenerativeModel({ model: 'gemini-pro' });\n\n// Middleware\napp.use(cors({\n  origin: process.env.FRONTEND_URL || '*',\n  credentials: true\n}));\napp.use(express.json({ limit: '10mb' }));\n\n// Rate limiting - 30 requests per IP per day\nconst limiter = rateLimit({\n  windowMs: 24 * 60 * 60 * 1000, // 24 hours\n  max: 30, // limit each IP to 30 requests per windowMs\n  message: { error: 'Daily limit exceeded. Try again tomorrow.' },\n  standardHeaders: true,\n  legacyHeaders: false,\n});\n\napp.use('/api/', limiter);\n\n// Indian Finance Context Prompt\nconst INDIAN_FINANCE_CONTEXT = `You are Finanzas AI, an expert Indian finance advisor. Provide practical, accurate advice on:\n- Indian investments: SIP, mutual funds, stocks, bonds, ELSS\n- Tax planning: 80C deductions, new vs old tax regime, LTCG/STCG\n- Banking: savings accounts, FDs, RDs, interest rates\n- Insurance: health, life, term insurance, ULIP\n- Digital payments: UPI, wallets, safety tips\n- Retirement: PPF, NPS, EPF, pension schemes\n- Goal planning: emergency funds, budgeting, loans\n\nAlways:\n- Use Indian rupees (₹) for amounts\n- Reference current Indian financial regulations\n- Provide actionable, beginner-friendly advice\n- Include specific examples and calculations when helpful\n- Keep responses concise but comprehensive`;\n\n// Health check endpoint\napp.get('/health', (req, res) => {\n  res.json({ status: 'healthy', timestamp: new Date().toISOString() });\n});\n\n// Chat endpoint\napp.post('/api/chat', async (req, res) => {\n  try {\n    const { message, language = 'English' } = req.body;\n    \n    if (!message || message.trim().length === 0) {\n      return res.status(400).json({ error: 'Message is required' });\n    }\n    \n    if (message.length > 500) {\n      return res.status(400).json({ error: 'Message too long. Limit: 500 characters' });\n    }\n    \n    const languageInstruction = language === 'Hindi' ? \n      ' Please respond in Hindi (Devanagari script) when possible, but use English for technical terms.' : \n      ' Please respond in English.';\n    \n    const prompt = `${INDIAN_FINANCE_CONTEXT}${languageInstruction}\n\nUser question: ${message}`;\n    \n    const result = await model.generateContent(prompt);\n    const response = await result.response;\n    const text = response.text();\n    \n    res.json({ \n      response: text,\n      timestamp: new Date().toISOString(),\n      language: language\n    });\n    \n  } catch (error) {\n    console.error('Gemini API Error:', error);\n    \n    if (error.message.includes('API key')) {\n      return res.status(401).json({ error: 'Invalid API key configuration' });\n    }\n    \n    if (error.message.includes('quota')) {\n      return res.status(429).json({ error: 'API quota exceeded. Please try again later.' });\n    }\n    \n    res.status(500).json({ \n      error: 'Unable to process your request. Please try again.',\n      details: process.env.NODE_ENV === 'development' ? error.message : undefined\n    });\n  }\n});\n\n// Error handling middleware\napp.use((error, req, res, next) => {\n  console.error('Server Error:', error);\n  res.status(500).json({ error: 'Internal server error' });\n});\n\n// 404 handler\napp.use('*', (req, res) => {\n  res.status(404).json({ error: 'Endpoint not found' });\n});\n\napp.listen(PORT, () => {\n  console.log(`🚀 Finanzas AI Backend running on port ${PORT}`);\n  console.log(`📊 Rate limit: 30 requests per IP per day`);\n  console.log(`🔑 Gemini API: ${process.env.GEMINI_API_KEY ? 'Configured' : 'Missing'}`);\n});\n\nmodule.exports = app;",
+      "package_json": "{\n  \"name\": \"finanzas-ai-backend\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Backend proxy for Finanzas AI - Indian Finance Coach\",\n  \"main\": \"server.js\",\n  \"scripts\": {\n    \"start\": \"node server.js\",\n    \"dev\": \"nodemon server.js\"\n  },\n  \"dependencies\": {\n    \"express\": \"^4.18.2\",\n    \"cors\": \"^2.8.5\",\n    \"express-rate-limit\": \"^7.1.5\",\n    \"@google/generative-ai\": \"^0.2.1\",\n    \"dotenv\": \"^16.3.1\"\n  },\n  \"devDependencies\": {\n    \"nodemon\": \"^3.0.2\"\n  },\n  \"engines\": {\n    \"node\": \">=16.0.0\"\n  }\n}"
+    }
+    </script>
 
     <script src="app.js"></script>
-    
-    <!-- Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(() => console.log('SW registered'))
-                    .catch(() => console.log('SW registration failed'));
-            });
-        }
-    </script>
 </body>
 </html>

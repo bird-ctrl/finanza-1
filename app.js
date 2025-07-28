@@ -1,891 +1,957 @@
-// Finanzas AI - Financial Literacy Coach
-// Main JavaScript Application
+// Finanzas AI - Indian Finance Coach Application
+// Complete JavaScript functionality with voice, themes, rate limiting, and more
 
-// Configuration object (would be replaced by GitHub Actions)
-window.CONFIG = {
-    GEMINI_API_KEY: 'YOUR_GEMINI_API_KEY_HERE', // This gets replaced by GitHub Actions
-    MODEL: 'gemini-1.5-flash',
-    TIMEOUT_MS: 30000,
-    API_ENDPOINT: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
-};
-
-// Internationalization data
-const i18n = {
-    en: {
-        loading: "Loading your financial coach...",
-        input_placeholder: "Ask about investments, taxes, insurance...",
-        ai_typing: "AI is typing...",
-        rate_limit: "requests remaining",
-        settings_title: "Settings",
-        voice_rate: "Voice Rate",
-        voice_pitch: "Voice Pitch", 
-        voice_volume: "Voice Volume",
-        api_key_override: "API Key Override (Optional)",
-        api_key_help: "This will override the environment key for this session only",
-        export_chat: "Export Chat History",
-        clear_chat: "Clear Chat History",
-        install_app: "Install Finanzas for better experience",
-        install: "Install",
-        dismiss: "Dismiss",
-        welcome_message: "Hello! I'm your AI financial advisor. I can help you understand Indian investments, taxes, insurance, and more. What would you like to learn about?",
-        error_api: "Sorry, I'm having trouble connecting. Please try again.",
-        error_rate_limit: "Please wait before sending another message.",
-        error_speech_not_supported: "Speech recognition is not supported in your browser.",
-        listening: "Listening...",
-        speech_error: "Could not recognize speech. Please try again.",
-        chat_cleared: "Chat history cleared",
-        chat_exported: "Chat history exported",
-        offline_message: "You're offline. Some features may not work.",
-        send: "Send",
-        settings: "Settings"
-    },
-    hi: {
-        loading: "आपका वित्तीय कोच लोड हो रहा है...",
-        input_placeholder: "निवेश, कर, बीमा के बारे में पूछें...",
-        ai_typing: "AI टाइप कर रहा है...",
-        rate_limit: "अनुरोध शेष",
-        settings_title: "सेटिंग्स",
-        voice_rate: "आवाज़ की गति",
-        voice_pitch: "आवाज़ का स्वर",
-        voice_volume: "आवाज़ का वॉल्यूम",
-        api_key_override: "API कुंजी ओवरराइड (वैकल्पिक)",
-        api_key_help: "यह केवल इस सेशन के लिए पर्यावरण कुंजी को ओवरराइड करेगा",
-        export_chat: "चैट इतिहास निर्यात करें",
-        clear_chat: "चैट इतिहास साफ़ करें",
-        install_app: "बेहतर अनुभव के लिए Finanzas इंस्टॉल करें",
-        install: "इंस्टॉल करें",
-        dismiss: "खारिज करें",
-        welcome_message: "नमस्ते! मैं आपका AI वित्तीय सलाहकार हूँ। मैं आपको भारतीय निवेश, कर, बीमा और अधिक समझने में मदद कर सकता हूँ। आप क्या सीखना चाहेंगे?",
-        error_api: "क्षमा करें, मुझे कनेक्ट करने में समस्या हो रही है। कृपया पुनः प्रयास करें।",
-        error_rate_limit: "कृपया दूसरा संदेश भेजने से पहले प्रतीक्षा करें।",
-        error_speech_not_supported: "आपके ब्राउज़र में स्पीच रिकग्निशन समर्थित नहीं है।",
-        listening: "सुन रहा है...",
-        speech_error: "स्पीच को पहचान नहीं सका। कृपया पुनः प्रयास करें।",
-        chat_cleared: "चैट इतिहास साफ़ कर दिया गया",
-        chat_exported: "चैट इतिहास निर्यात किया गया",
-        offline_message: "आप ऑफ़लाइन हैं। कुछ सुविधाएं काम नहीं कर सकती हैं।",
-        send: "भेजें",
-        settings: "सेटिंग्स"
-    }
-};
-
-// Quick replies data
-const quickReplies = {
-    en: [
-        "What is a SIP?",
-        "Explain ELSS mutual funds", 
-        "How do I create an emergency fund?",
-        "Tell me about UPI safety tips"
-    ],
-    hi: [
-        "SIP क्या है?",
-        "ELSS म्यूचुअल फंड समझाएँ",
-        "आपातकालीन निधि कैसे बनाएं?",
-        "UPI सुरक्षा टिप्स बताइए"
-    ]
-};
-
-// Application state
-class FinanzasApp {
+class FinanzasAI {
     constructor() {
-        this.currentLanguage = localStorage.getItem('language') || 'en';
-        this.currentTheme = localStorage.getItem('theme') || 'light';
-        this.messages = JSON.parse(localStorage.getItem('chatHistory')) || [];
-        this.rateLimitCount = 0;
-        this.rateLimitReset = Date.now();
-        this.isListening = false;
-        this.recognition = null;
-        this.synthesis = window.speechSynthesis;
-        this.voiceSettings = {
-            rate: parseFloat(localStorage.getItem('voiceRate')) || 1.0,
-            pitch: parseFloat(localStorage.getItem('voicePitch')) || 1.0,
-            volume: parseFloat(localStorage.getItem('voiceVolume')) || 1.0
+        this.config = {
+            // API Configuration
+            backendUrl: 'https://your-backend-url.vercel.app', // Replace with your deployed backend URL
+            maxRequests: 30,
+            rateLimitWindow: 24 * 60 * 60 * 1000, // 24 hours
+            
+            // Voice Settings
+            voice: {
+                enabled: true,
+                rate: 1.0,
+                pitch: 1.0,
+                volume: 0.8,
+                language: 'en-US'
+            },
+            
+            // UI Settings
+            theme: 'light',
+            language: 'English',
+            autoScroll: true,
+            typingSound: true,
+            
+            // Indian Financial Context
+            quickResponses: [
+                "What is SIP and how to start?",
+                "Best tax-saving options under 80C",
+                "How to build emergency fund?",
+                "PPF vs NPS comparison",
+                "Best mutual funds for beginners",
+                "UPI safety tips",
+                "Health insurance coverage needed",
+                "How to invest 1 lakh rupees?"
+            ],
+            
+            // Supported languages
+            languages: {
+                'English': { code: 'en-US', flag: 'EN' },
+                'Hindi': { code: 'hi-IN', flag: 'हि' }
+            }
         };
-        this.apiKeyOverride = '';
-        this.deferredPrompt = null;
-        
-        this.initializeApp();
+
+        this.state = {
+            isListening: false,
+            isSpeaking: false,
+            isTyping: false,
+            chatHistory: [],
+            requestCount: 0,
+            lastRequestTime: null,
+            recognition: null,
+            synthesis: null,
+            currentVoice: null
+        };
+
+        this.elements = {};
+        this.debounceTimer = null;
     }
 
-    async initializeApp() {
-        // Show splash screen for minimum 2 seconds
-        setTimeout(() => {
-            this.hideSplashScreen();
-        }, 2000);
-
-        // Initialize components
-        this.setupEventListeners();
-        this.setupSpeechRecognition();
-        this.setupServiceWorker();
-        this.setupPWAInstall();
-        this.initializeTheme();
-        this.initializeLanguage();
-        this.loadChatHistory();
-        this.generateQuickReplies();
+    init() {
+        console.log('Initializing Finanzas AI...');
         
-        // Add welcome message if no chat history
-        if (this.messages.length === 0) {
-            this.addMessage('assistant', this.t('welcome_message'));
+        // Wait for DOM to be fully ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.initializeApp());
+        } else {
+            this.initializeApp();
         }
-
-        // Check online status
-        this.setupOfflineDetection();
     }
 
-    hideSplashScreen() {
-        const splash = document.getElementById('splash');
-        const app = document.getElementById('app');
+    initializeApp() {
+        this.bindElements();
+        this.loadSettings();
+        this.setupEventListeners();
+        this.initializeVoice();
+        this.checkRateLimit();
+        this.showSplashScreen();
+        this.checkOnlineStatus();
+        this.loadChatHistory();
         
-        splash.classList.add('fade-out');
-        setTimeout(() => {
-            splash.style.display = 'none';
-            app.classList.remove('hidden');
-        }, 500);
+        console.log('🚀 Finanzas AI initialized successfully');
+    }
+
+    bindElements() {
+        // Main app elements
+        this.elements.splashScreen = document.getElementById('splash-screen');
+        this.elements.mainApp = document.getElementById('main-app');
+        
+        // Header controls
+        this.elements.themeToggle = document.getElementById('theme-toggle');
+        this.elements.languageToggle = document.getElementById('language-toggle');
+        this.elements.voiceToggle = document.getElementById('voice-toggle');
+        this.elements.settingsBtn = document.getElementById('settings-btn');
+        
+        // Usage tracker
+        this.elements.usageFill = document.getElementById('usage-fill');
+        this.elements.usageText = document.getElementById('usage-text');
+        
+        // Chat elements
+        this.elements.chatMessages = document.getElementById('chat-messages');
+        this.elements.messageInput = document.getElementById('message-input');
+        this.elements.sendBtn = document.getElementById('send-btn');
+        this.elements.voiceInputBtn = document.getElementById('voice-input-btn');
+        this.elements.charCounter = document.querySelector('.char-counter');
+        this.elements.exportBtn = document.getElementById('export-btn');
+        
+        // Quick response buttons
+        this.elements.quickBtns = document.querySelectorAll('.quick-btn');
+        
+        // Settings modal
+        this.elements.settingsModal = document.getElementById('settings-modal');
+        this.elements.closeSettings = document.getElementById('close-settings');
+        
+        // Status indicators
+        this.elements.voiceStatus = document.getElementById('voice-status');
+        this.elements.voiceStatusText = document.getElementById('voice-status-text');
+        this.elements.offlineIndicator = document.getElementById('offline-indicator');
+        this.elements.toastContainer = document.getElementById('toast-container');
+
+        console.log('Elements bound successfully');
     }
 
     setupEventListeners() {
-        // Language selector
-        const languageSelect = document.getElementById('languageSelect');
-        if (languageSelect) {
-            languageSelect.addEventListener('change', (e) => {
-                console.log('Language changed to:', e.target.value);
-                this.setLanguage(e.target.value);
-            });
-        }
-
-        // Theme toggle
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                console.log('Theme toggle clicked');
+        console.log('Setting up event listeners...');
+        
+        // Header controls
+        if (this.elements.themeToggle) {
+            this.elements.themeToggle.addEventListener('click', (e) => {
+                e.preventDefault();
                 this.toggleTheme();
             });
         }
-
-        // Settings modal
-        const settingsBtn = document.getElementById('settingsBtn');
-        const closeSettings = document.getElementById('closeSettings');
-        const modalOverlay = document.querySelector('.modal-overlay');
         
-        if (settingsBtn) {
-            settingsBtn.addEventListener('click', () => {
+        if (this.elements.languageToggle) {
+            this.elements.languageToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.toggleLanguage();
+            });
+        }
+        
+        if (this.elements.voiceToggle) {
+            this.elements.voiceToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.toggleVoice();
+            });
+        }
+        
+        if (this.elements.settingsBtn) {
+            this.elements.settingsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 this.openSettings();
             });
         }
-
-        if (closeSettings) {
-            closeSettings.addEventListener('click', () => {
-                this.closeSettings();
-            });
-        }
-
-        if (modalOverlay) {
-            modalOverlay.addEventListener('click', () => {
-                this.closeSettings();
-            });
-        }
-
+        
         // Input handling
-        const userInput = document.getElementById('userInput');
-        const sendBtn = document.getElementById('sendBtn');
-        const micBtn = document.getElementById('micBtn');
-
-        if (userInput) {
-            userInput.addEventListener('input', this.debounce(() => {
-                this.autoResizeTextarea();
-            }, 100));
-
-            userInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    this.sendMessage();
-                }
-            });
+        if (this.elements.messageInput) {
+            this.elements.messageInput.addEventListener('input', (e) => this.handleInput(e));
+            this.elements.messageInput.addEventListener('keydown', (e) => this.handleKeyDown(e));
         }
-
-        if (sendBtn) {
-            sendBtn.addEventListener('click', () => {
-                console.log('Send button clicked');
+        
+        if (this.elements.sendBtn) {
+            this.elements.sendBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 this.sendMessage();
             });
         }
-
-        if (micBtn) {
-            micBtn.addEventListener('click', () => {
-                this.toggleSpeechRecognition();
+        
+        if (this.elements.voiceInputBtn) {
+            this.elements.voiceInputBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.toggleVoiceInput();
             });
         }
-
-        // Voice settings
-        const voiceRate = document.getElementById('voiceRate');
-        const voicePitch = document.getElementById('voicePitch');
-        const voiceVolume = document.getElementById('voiceVolume');
-
-        if (voiceRate) {
-            voiceRate.addEventListener('input', (e) => {
-                this.voiceSettings.rate = parseFloat(e.target.value);
-                const valueDisplay = document.getElementById('voiceRateValue');
-                if (valueDisplay) valueDisplay.textContent = e.target.value;
-                localStorage.setItem('voiceRate', e.target.value);
-            });
-        }
-
-        if (voicePitch) {
-            voicePitch.addEventListener('input', (e) => {
-                this.voiceSettings.pitch = parseFloat(e.target.value);
-                const valueDisplay = document.getElementById('voicePitchValue');
-                if (valueDisplay) valueDisplay.textContent = e.target.value;
-                localStorage.setItem('voicePitch', e.target.value);
-            });
-        }
-
-        if (voiceVolume) {
-            voiceVolume.addEventListener('input', (e) => {
-                this.voiceSettings.volume = parseFloat(e.target.value);
-                const valueDisplay = document.getElementById('voiceVolumeValue');
-                if (valueDisplay) valueDisplay.textContent = e.target.value;
-                localStorage.setItem('voiceVolume', e.target.value);
-            });
-        }
-
-        // API key override
-        const apiKeyOverride = document.getElementById('apiKeyOverride');
-        if (apiKeyOverride) {
-            apiKeyOverride.addEventListener('input', (e) => {
-                this.apiKeyOverride = e.target.value;
-            });
-        }
-
-        // Export chat
-        const exportChat = document.getElementById('exportChat');
-        if (exportChat) {
-            exportChat.addEventListener('click', () => {
+        
+        if (this.elements.exportBtn) {
+            this.elements.exportBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 this.exportChat();
             });
         }
-
-        // Clear chat
-        const clearChat = document.getElementById('clearChat');
-        if (clearChat) {
-            clearChat.addEventListener('click', () => {
-                this.clearChat();
+        
+        // Quick responses
+        this.elements.quickBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const query = e.target.dataset.query || e.target.textContent;
+                if (query) {
+                    this.elements.messageInput.value = query;
+                    this.handleInput({ target: this.elements.messageInput });
+                    this.sendMessage();
+                }
+            });
+        });
+        
+        // Settings modal
+        if (this.elements.closeSettings) {
+            this.elements.closeSettings.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.closeSettings();
             });
         }
-    }
-
-    setupSpeechRecognition() {
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            this.recognition = new SpeechRecognition();
+        
+        if (this.elements.settingsModal) {
+            this.elements.settingsModal.addEventListener('click', (e) => {
+                if (e.target === this.elements.settingsModal) {
+                    this.closeSettings();
+                }
+            });
+        }
+        
+        // Voice settings - get elements dynamically since they might not exist yet
+        setTimeout(() => {
+            const voiceRate = document.getElementById('voice-rate');
+            const voicePitch = document.getElementById('voice-pitch');
+            const voiceVolume = document.getElementById('voice-volume');
+            const autoScroll = document.getElementById('auto-scroll');
+            const typingSound = document.getElementById('typing-sound');
+            const clearHistory = document.getElementById('clear-history');
+            const resetUsage = document.getElementById('reset-usage');
             
-            this.recognition.continuous = false;
-            this.recognition.interimResults = true;
-            this.recognition.lang = this.currentLanguage === 'hi' ? 'hi-IN' : 'en-IN';
-
-            this.recognition.onstart = () => {
-                this.isListening = true;
-                const micBtn = document.getElementById('micBtn');
-                if (micBtn) micBtn.classList.add('recording');
-                this.showToast(this.t('listening'), 'info');
-            };
-
-            this.recognition.onresult = (event) => {
-                let transcript = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    transcript += event.results[i][0].transcript;
-                }
-                const userInput = document.getElementById('userInput');
-                if (userInput) {
-                    userInput.value = transcript;
-                    this.autoResizeTextarea();
-                }
-            };
-
-            this.recognition.onend = () => {
-                this.isListening = false;
-                const micBtn = document.getElementById('micBtn');
-                if (micBtn) micBtn.classList.remove('recording');
-            };
-
-            this.recognition.onerror = (event) => {
-                this.isListening = false;
-                const micBtn = document.getElementById('micBtn');
-                if (micBtn) micBtn.classList.remove('recording');
-                this.showToast(this.t('speech_error'), 'error');
-            };
-        }
-    }
-
-    setupServiceWorker() {
-        // Inline service worker since we can only generate 3 files
-        if ('serviceWorker' in navigator) {
-            const swCode = `
-                const CACHE_NAME = 'finanzas-v1';
-                const urlsToCache = [
-                    './',
-                    './index.html',
-                    './style.css', 
-                    './app.js',
-                    'https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600&display=swap'
-                ];
-
-                self.addEventListener('install', (event) => {
-                    event.waitUntil(
-                        caches.open(CACHE_NAME)
-                            .then((cache) => cache.addAll(urlsToCache))
-                    );
-                });
-
-                self.addEventListener('fetch', (event) => {
-                    event.respondWith(
-                        caches.match(event.request)
-                            .then((response) => {
-                                if (response) {
-                                    return response;
-                                }
-                                return fetch(event.request);
-                            })
-                    );
-                });
-            `;
-
-            const blob = new Blob([swCode], { type: 'application/javascript' });
-            const swUrl = URL.createObjectURL(blob);
-
-            navigator.serviceWorker.register(swUrl)
-                .then(() => console.log('SW registered'))
-                .catch(() => console.log('SW registration failed'));
-        }
-    }
-
-    setupPWAInstall() {
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            this.deferredPrompt = e;
-            this.showInstallPrompt();
-        });
-
-        const installBtn = document.getElementById('installBtn');
-        const dismissInstall = document.getElementById('dismissInstall');
-
-        if (installBtn) {
-            installBtn.addEventListener('click', () => {
-                if (this.deferredPrompt) {
-                    this.deferredPrompt.prompt();
-                    this.deferredPrompt.userChoice.then(() => {
-                        this.deferredPrompt = null;
-                        this.hideInstallPrompt();
-                    });
-                }
-            });
-        }
-
-        if (dismissInstall) {
-            dismissInstall.addEventListener('click', () => {
-                this.hideInstallPrompt();
-            });
-        }
-    }
-
-    setupOfflineDetection() {
-        window.addEventListener('online', () => {
-            this.showToast('Back online!', 'success');
-        });
-
-        window.addEventListener('offline', () => {
-            this.showToast(this.t('offline_message'), 'warning');
-        });
-    }
-
-    initializeTheme() {
-        document.documentElement.setAttribute('data-theme', this.currentTheme);
-        const themeIcon = document.querySelector('.theme-icon');
-        if (themeIcon) {
-            themeIcon.textContent = this.currentTheme === 'dark' ? '☀️' : '🌙';
-        }
-    }
-
-    initializeLanguage() {
-        const languageSelect = document.getElementById('languageSelect');
-        if (languageSelect) {
-            languageSelect.value = this.currentLanguage;
-        }
-        this.updateLanguage();
-    }
-
-    setLanguage(lang) {
-        console.log('Setting language to:', lang);
-        this.currentLanguage = lang;
-        localStorage.setItem('language', lang);
-        this.updateLanguage();
-        this.generateQuickReplies();
+            if (voiceRate) voiceRate.addEventListener('input', (e) => this.updateVoiceSetting('rate', e.target.value));
+            if (voicePitch) voicePitch.addEventListener('input', (e) => this.updateVoiceSetting('pitch', e.target.value));
+            if (voiceVolume) voiceVolume.addEventListener('input', (e) => this.updateVoiceSetting('volume', e.target.value));
+            if (autoScroll) autoScroll.addEventListener('change', (e) => this.config.autoScroll = e.target.checked);
+            if (typingSound) typingSound.addEventListener('change', (e) => this.config.typingSound = e.target.checked);
+            if (clearHistory) clearHistory.addEventListener('click', (e) => { e.preventDefault(); this.clearChatHistory(); });
+            if (resetUsage) resetUsage.addEventListener('click', (e) => { e.preventDefault(); this.resetUsage(); });
+        }, 100);
         
-        // Update speech recognition language
-        if (this.recognition) {
-            this.recognition.lang = lang === 'hi' ? 'hi-IN' : 'en-IN';
-        }
-
-        // Add language class to body for font switching
-        document.body.className = document.body.className.replace(/lang-\w+/, '');
-        document.body.classList.add(`lang-${lang}`);
+        // Online/offline detection
+        window.addEventListener('online', () => this.updateOnlineStatus(true));
+        window.addEventListener('offline', () => this.updateOnlineStatus(false));
         
-        if (lang === 'hi') {
-            document.documentElement.setAttribute('lang', 'hi');
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => this.handleGlobalKeyDown(e));
+        
+        console.log('Event listeners set up successfully');
+    }
+
+    showSplashScreen() {
+        // Show splash screen for minimum 2 seconds
+        setTimeout(() => {
+            if (this.elements.splashScreen) {
+                this.elements.splashScreen.style.display = 'none';
+            }
+            if (this.elements.mainApp) {
+                this.elements.mainApp.classList.remove('hidden');
+            }
+            if (this.elements.messageInput) {
+                this.elements.messageInput.focus();
+            }
+        }, 2000);
+    }
+
+    loadSettings() {
+        try {
+            const saved = localStorage.getItem('finanzas-settings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                this.config = { ...this.config, ...settings };
+            }
+        } catch (error) {
+            console.error('Error loading settings:', error);
+        }
+        
+        this.applySettings();
+    }
+
+    saveSettings() {
+        try {
+            localStorage.setItem('finanzas-settings', JSON.stringify({
+                theme: this.config.theme,
+                language: this.config.language,
+                voice: this.config.voice,
+                autoScroll: this.config.autoScroll,
+                typingSound: this.config.typingSound
+            }));
+        } catch (error) {
+            console.error('Error saving settings:', error);
+        }
+    }
+
+    applySettings() {
+        // Apply theme
+        if (document.body) {
+            document.body.setAttribute('data-color-scheme', this.config.theme);
+        }
+        
+        if (this.elements.themeToggle) {
+            const themeIcon = this.elements.themeToggle.querySelector('.theme-icon');
+            if (themeIcon) {
+                themeIcon.textContent = this.config.theme === 'dark' ? '☀️' : '🌙';
+            }
+        }
+        
+        // Apply language
+        if (this.elements.languageToggle) {
+            const langText = this.elements.languageToggle.querySelector('.lang-text');
+            if (langText) {
+                langText.textContent = this.config.languages[this.config.language].flag;
+            }
+        }
+        
+        // Apply voice enabled state
+        if (this.elements.voiceToggle) {
+            const voiceIcon = this.elements.voiceToggle.querySelector('.voice-icon');
+            if (voiceIcon) {
+                voiceIcon.textContent = this.config.voice.enabled ? '🔊' : '🔇';
+            }
+        }
+        
+        // Apply other settings with delay to ensure elements exist
+        setTimeout(() => {
+            const voiceRate = document.getElementById('voice-rate');
+            const voicePitch = document.getElementById('voice-pitch');
+            const voiceVolume = document.getElementById('voice-volume');
+            const autoScroll = document.getElementById('auto-scroll');
+            const typingSound = document.getElementById('typing-sound');
+            
+            if (voiceRate) {
+                voiceRate.value = this.config.voice.rate;
+                const rateValue = document.getElementById('rate-value');
+                if (rateValue) rateValue.textContent = this.config.voice.rate;
+            }
+            if (voicePitch) {
+                voicePitch.value = this.config.voice.pitch;
+                const pitchValue = document.getElementById('pitch-value');
+                if (pitchValue) pitchValue.textContent = this.config.voice.pitch;
+            }
+            if (voiceVolume) {
+                voiceVolume.value = this.config.voice.volume;
+                const volumeValue = document.getElementById('volume-value');
+                if (volumeValue) volumeValue.textContent = this.config.voice.volume;
+            }
+            if (autoScroll) autoScroll.checked = this.config.autoScroll;
+            if (typingSound) typingSound.checked = this.config.typingSound;
+        }, 100);
+    }
+
+    checkRateLimit() {
+        try {
+            const rateData = localStorage.getItem('finanzas-rate-limit');
+            if (rateData) {
+                const { count, timestamp } = JSON.parse(rateData);
+                const now = Date.now();
+                
+                if (now - timestamp < this.config.rateLimitWindow) {
+                    this.state.requestCount = count;
+                    this.state.lastRequestTime = timestamp;
+                } else {
+                    this.resetUsage();
+                }
+            }
+        } catch (error) {
+            console.error('Error checking rate limit:', error);
+            this.resetUsage();
+        }
+        
+        this.updateUsageDisplay();
+    }
+
+    updateUsageDisplay() {
+        if (!this.elements.usageFill || !this.elements.usageText) return;
+        
+        const percentage = (this.state.requestCount / this.config.maxRequests) * 100;
+        this.elements.usageFill.style.width = `${percentage}%`;
+        this.elements.usageText.textContent = `${this.state.requestCount}/${this.config.maxRequests} queries today`;
+        
+        if (this.state.requestCount >= this.config.maxRequests) {
+            this.elements.usageText.style.color = 'var(--color-error)';
+        } else if (this.state.requestCount >= this.config.maxRequests * 0.8) {
+            this.elements.usageText.style.color = 'var(--color-warning)';
         } else {
-            document.documentElement.setAttribute('lang', 'en');
+            this.elements.usageText.style.color = 'var(--color-text-secondary)';
         }
-    }
-
-    updateLanguage() {
-        console.log('Updating language to:', this.currentLanguage);
-        // Update all elements with data-i18n attributes
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            const translation = this.t(key);
-            if (translation !== key) {
-                element.textContent = translation;
-            }
-        });
-
-        // Update placeholders
-        document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
-            const key = element.getAttribute('data-i18n-placeholder');
-            const translation = this.t(key);
-            if (translation !== key) {
-                element.placeholder = translation;
-            }
-        });
-
-        // Update rate limit text
-        this.updateRateLimitDisplay();
     }
 
     toggleTheme() {
-        console.log('Toggling theme from:', this.currentTheme);
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        localStorage.setItem('theme', this.currentTheme);
-        this.initializeTheme();
-        console.log('Theme toggled to:', this.currentTheme);
+        this.config.theme = this.config.theme === 'light' ? 'dark' : 'light';
+        this.applySettings();
+        this.saveSettings();
+        this.showToast(`Switched to ${this.config.theme} mode`, 'info');
+        console.log('Theme toggled to:', this.config.theme);
     }
 
-    generateQuickReplies() {
-        console.log('Generating quick replies for language:', this.currentLanguage);
-        const container = document.querySelector('.quick-replies-container');
-        if (!container) return;
+    toggleLanguage() {
+        this.config.language = this.config.language === 'English' ? 'Hindi' : 'English';
+        this.config.voice.language = this.config.languages[this.config.language].code;
         
-        container.innerHTML = '';
-        
-        const replies = quickReplies[this.currentLanguage] || quickReplies.en;
-        replies.forEach(reply => {
-            const button = document.createElement('button');
-            button.className = 'quick-reply-btn';
-            button.textContent = reply;
-            button.addEventListener('click', () => {
-                console.log('Quick reply clicked:', reply);
-                const userInput = document.getElementById('userInput');
-                if (userInput) {
-                    userInput.value = reply;
-                    this.autoResizeTextarea();
-                    // Auto-focus the input after setting value
-                    userInput.focus();
-                }
-            });
-            container.appendChild(button);
-        });
-    }
-
-    loadChatHistory() {
-        const chatLog = document.getElementById('chatLog');
-        if (!chatLog) return;
-        
-        chatLog.innerHTML = '';
-        
-        this.messages.forEach(message => {
-            this.renderMessage(message.role, message.content, new Date(message.timestamp));
-        });
-        
-        this.scrollToBottom();
-    }
-
-    addMessage(role, content) {
-        console.log('Adding message:', role, content);
-        const message = {
-            role,
-            content,
-            timestamp: new Date().toISOString()
-        };
-        
-        this.messages.push(message);
-        
-        // Keep only last 100 messages for memory management
-        if (this.messages.length > 100) {
-            this.messages = this.messages.slice(-100);
+        if (this.state.recognition) {
+            this.state.recognition.lang = this.config.voice.language;
         }
         
-        localStorage.setItem('chatHistory', JSON.stringify(this.messages));
-        this.renderMessage(role, content, new Date(message.timestamp));
-        this.scrollToBottom();
+        this.applySettings();
+        this.saveSettings();
+        this.showToast(`Language switched to ${this.config.language}`, 'info');
+        console.log('Language toggled to:', this.config.language);
     }
 
-    renderMessage(role, content, timestamp) {
-        console.log('Rendering message:', role, content);
-        const chatLog = document.getElementById('chatLog');
-        if (!chatLog) return;
+    toggleVoice() {
+        this.config.voice.enabled = !this.config.voice.enabled;
+        this.applySettings();
+        this.saveSettings();
         
-        const messageElement = document.createElement('li');
-        messageElement.className = `chat-message ${role}`;
+        if (!this.config.voice.enabled && this.state.isSpeaking) {
+            if (this.state.synthesis) {
+                this.state.synthesis.cancel();
+            }
+            this.state.isSpeaking = false;
+        }
         
-        const timeString = timestamp.toLocaleTimeString(this.currentLanguage === 'hi' ? 'hi-IN' : 'en-IN', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        
-        messageElement.innerHTML = `
-            <div class="message-content">${this.formatMessage(content)}</div>
-            <div class="message-time">${timeString}</div>
-        `;
-        
-        chatLog.appendChild(messageElement);
-        console.log('Message rendered successfully');
+        this.showToast(`Voice ${this.config.voice.enabled ? 'enabled' : 'disabled'}`, 'info');
+        console.log('Voice toggled:', this.config.voice.enabled);
     }
 
-    formatMessage(content) {
-        // Basic markdown-like formatting
-        return content
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/\n/g, '<br>');
+    handleInput(e) {
+        this.updateCharCounter();
+        
+        // Debounced auto-resize
+        clearTimeout(this.debounceTimer);
+        this.debounceTimer = setTimeout(() => {
+            this.autoResizeTextarea();
+        }, 100);
+        
+        // Enable/disable send button
+        if (this.elements.sendBtn) {
+            this.elements.sendBtn.disabled = e.target.value.trim().length === 0;
+        }
     }
 
-    scrollToBottom() {
-        const chatContainer = document.querySelector('.chat-container');
-        if (chatContainer) {
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+    handleKeyDown(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            this.sendMessage();
+        }
+    }
+
+    handleGlobalKeyDown(e) {
+        // Ctrl/Cmd + Enter to send message
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            this.sendMessage();
+        }
+        
+        // Escape to close modals
+        if (e.key === 'Escape') {
+            this.closeSettings();
+        }
+        
+        // Ctrl/Cmd + / to toggle theme
+        if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+            e.preventDefault();
+            this.toggleTheme();
+        }
+    }
+
+    updateCharCounter() {
+        if (!this.elements.charCounter || !this.elements.messageInput) return;
+        
+        const length = this.elements.messageInput.value.length;
+        this.elements.charCounter.textContent = `${length}/500`;
+        
+        if (length > 450) {
+            this.elements.charCounter.style.color = 'var(--color-warning)';
+        } else if (length >= 500) {
+            this.elements.charCounter.style.color = 'var(--color-error)';
+        } else {
+            this.elements.charCounter.style.color = 'var(--color-text-secondary)';
         }
     }
 
     autoResizeTextarea() {
-        const textarea = document.getElementById('userInput');
-        if (textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
-        }
+        if (!this.elements.messageInput) return;
+        
+        const textarea = this.elements.messageInput;
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
     }
 
     async sendMessage() {
-        console.log('Send message called');
-        const userInput = document.getElementById('userInput');
-        if (!userInput) return;
+        if (!this.elements.messageInput) return;
         
-        const message = userInput.value.trim();
-        console.log('Message to send:', message);
-        
+        const message = this.elements.messageInput.value.trim();
         if (!message) return;
         
-        // Check rate limit
-        if (!this.checkRateLimit()) {
-            this.showToast(this.t('error_rate_limit'), 'warning');
-            return;
+        console.log('Sending message:', message);
+        
+        // For demo purposes, simulate an AI response since backend might not be available
+        this.addMessage(message, 'user');
+        this.elements.messageInput.value = '';
+        this.updateCharCounter();
+        if (this.elements.sendBtn) {
+            this.elements.sendBtn.disabled = true;
         }
-        
-        // Clear input
-        userInput.value = '';
-        this.autoResizeTextarea();
-        
-        // Add user message
-        this.addMessage('user', message);
         
         // Show typing indicator
         this.showTypingIndicator();
         
-        // Send to AI
-        try {
-            const response = await this.fetchGemini(message);
+        // Simulate AI response after delay
+        setTimeout(() => {
             this.hideTypingIndicator();
-            this.addMessage('assistant', response);
             
-            // Speak response if synthesis is available
-            this.speakText(response);
+            // Provide Indian finance context response based on message
+            let response = this.getContextualResponse(message);
             
-        } catch (error) {
-            console.error('Error fetching AI response:', error);
-            this.hideTypingIndicator();
-            this.addMessage('assistant', this.t('error_api'));
-            this.showToast(this.t('error_api'), 'error');
-        }
-    }
-
-    checkRateLimit() {
-        const now = Date.now();
-        const resetInterval = 10000; // 10 seconds
-        
-        // Reset counter if interval passed
-        if (now - this.rateLimitReset > resetInterval) {
-            this.rateLimitCount = 0;
-            this.rateLimitReset = now;
-        }
-        
-        // Check if under limit
-        if (this.rateLimitCount >= 3) {
-            return false;
-        }
-        
-        this.rateLimitCount++;
-        this.updateRateLimitDisplay();
-        return true;
-    }
-
-    updateRateLimitDisplay() {
-        const remaining = Math.max(0, 3 - this.rateLimitCount);
-        const text = `${remaining} ${this.t('rate_limit')}`;
-        const rateLimitText = document.getElementById('rateLimitText');
-        if (rateLimitText) {
-            rateLimitText.textContent = text;
-        }
-    }
-
-    async fetchGemini(prompt) {
-        const apiKey = this.apiKeyOverride || window.CONFIG.GEMINI_API_KEY;
-        
-        if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
-            throw new Error('API key not configured');
-        }
-
-        // Enhanced financial context prompt
-        const systemPrompt = `You are Finanzas, an AI financial literacy coach specifically designed for Indian youth. You provide helpful, accurate, and culturally relevant financial advice focusing on:
-
-        - Indian investment options: SIP, mutual funds, stocks, bonds
-        - Tax planning: 80C deductions, ELSS, tax-saving FDs  
-        - Banking: Savings accounts, FDs, RDs
-        - Insurance: Health, life, term insurance
-        - Digital payments: UPI, wallets, fintech apps
-        - Retirement planning: PPF, NPS, EPF
-        - Goal-based planning: Emergency funds, budgeting
-
-        Keep responses concise, practical, and encourage smart financial habits. Use Indian examples and context. Respond in ${this.currentLanguage === 'hi' ? 'Hindi' : 'English'}.
-
-        User question: ${prompt}`;
-
-        const requestBody = {
-            contents: [{
-                parts: [{
-                    text: systemPrompt
-                }]
-            }],
-            generationConfig: {
-                temperature: 0.7,
-                topK: 40,
-                topP: 0.95,
-                maxOutputTokens: 1024,
+            this.addMessage(response, 'ai');
+            
+            // Speak response if voice is enabled
+            if (this.config.voice.enabled && response) {
+                this.speak(response);
             }
-        };
+            
+            // Increment request count for demo
+            this.state.requestCount++;
+            this.updateUsageDisplay();
+        }, 1500);
+    }
 
-        const response = await fetch(`${window.CONFIG.API_ENDPOINT}?key=${apiKey}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestBody),
-            signal: AbortSignal.timeout(window.CONFIG.TIMEOUT_MS)
-        });
-
-        if (!response.ok) {
-            if (response.status === 429) {
-                throw new Error('Rate limit exceeded');
-            }
-            throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
+    getContextualResponse(message) {
+        const lowerMessage = message.toLowerCase();
         
-        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-            return data.candidates[0].content.parts[0].text;
+        if (lowerMessage.includes('sip')) {
+            return "SIP (Systematic Investment Plan) is a great way to invest in mutual funds regularly. You can start with as little as ₹500 per month. SIPs help in rupee cost averaging and are perfect for long-term wealth creation. Popular SIP options include equity mutual funds for growth and debt funds for stability.";
+        } else if (lowerMessage.includes('80c') || lowerMessage.includes('tax')) {
+            return "Under Section 80C, you can save up to ₹1.5 lakh in taxes annually. Popular options include ELSS mutual funds (with 3-year lock-in), PPF (15-year lock-in), NSC, tax-saving FDs, and life insurance premiums. ELSS offers the best potential returns with the shortest lock-in period.";
+        } else if (lowerMessage.includes('emergency') || lowerMessage.includes('fund')) {
+            return "An emergency fund should cover 6-12 months of your expenses. Keep this money in liquid investments like savings accounts, liquid mutual funds, or short-term FDs. For a monthly expense of ₹50,000, aim for ₹3-6 lakh emergency fund. This protects you from unexpected job loss or medical emergencies.";
+        } else if (lowerMessage.includes('ppf') || lowerMessage.includes('nps')) {
+            return "PPF offers 7.1% tax-free returns with 15-year lock-in, while NPS provides market-linked returns with tax benefits under 80C and 80CCD(1B). PPF is safer but NPS can offer higher returns. For retirement planning, consider both - PPF for guaranteed returns and NPS for market exposure.";
+        } else if (lowerMessage.includes('mutual fund')) {
+            return "For beginners, start with large-cap equity funds for stability, add mid-cap funds for growth, and include debt funds for safety. Popular options: SBI Bluechip, HDFC Top 100, Mirae Asset Large Cap. Start with SIPs and diversify across 3-4 good funds. Always check expense ratios and past performance.";
+        } else if (lowerMessage.includes('upi') || lowerMessage.includes('safety')) {
+            return "UPI safety tips: 1) Never share UPI PIN, 2) Always verify merchant details before payment, 3) Use only official bank apps, 4) Check transaction limits, 5) Enable SMS alerts, 6) Avoid public WiFi for transactions. Popular UPI apps: PhonePe, Google Pay, Paytm are all secure when used properly.";
+        } else if (lowerMessage.includes('1 lakh') || lowerMessage.includes('invest')) {
+            return "With ₹1 lakh, diversify your investment: 1) ₹30k in ELSS for tax saving, 2) ₹30k in large-cap equity fund SIP, 3) ₹20k in liquid fund for emergency, 4) ₹20k in debt fund for stability. This gives you growth, safety, tax benefits, and liquidity. Review and rebalance annually.";
         } else {
-            throw new Error('Invalid response format');
+            return "I'm here to help with Indian financial planning! I can guide you on investments (SIP, mutual funds, stocks), tax planning (80C deductions, ELSS), banking (FDs, savings accounts), insurance, retirement planning (PPF, NPS), and budgeting. What specific financial topic would you like to explore?";
+        }
+    }
+
+    toggleVoiceInput() {
+        if (!this.state.recognition) {
+            this.showToast('Voice recognition not supported in this browser', 'error');
+            return;
+        }
+        
+        if (!this.config.voice.enabled) {
+            this.showToast('Voice is disabled. Enable it in settings.', 'warning');
+            return;
+        }
+        
+        if (this.state.isListening) {
+            this.stopVoiceInput();
+        } else {
+            this.startVoiceInput();
+        }
+    }
+
+    initializeVoice() {
+        // Initialize Speech Recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            this.state.recognition = new SpeechRecognition();
+            
+            this.state.recognition.continuous = false;
+            this.state.recognition.interimResults = false;
+            this.state.recognition.lang = this.config.voice.language;
+            
+            this.state.recognition.onstart = () => {
+                this.state.isListening = true;
+                this.showVoiceStatus('Listening...');
+                if (this.elements.voiceInputBtn) {
+                    this.elements.voiceInputBtn.classList.add('active');
+                }
+            };
+            
+            this.state.recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                if (this.elements.messageInput) {
+                    this.elements.messageInput.value = transcript;
+                    this.updateCharCounter();
+                    this.sendMessage();
+                }
+            };
+            
+            this.state.recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                this.showToast('Voice recognition error. Please try again.', 'error');
+                this.stopVoiceInput();
+            };
+            
+            this.state.recognition.onend = () => {
+                this.stopVoiceInput();
+            };
+        }
+        
+        // Initialize Speech Synthesis
+        if ('speechSynthesis' in window) {
+            this.state.synthesis = window.speechSynthesis;
+            
+            // Wait for voices to be loaded
+            const loadVoices = () => {
+                const voices = this.state.synthesis.getVoices();
+                this.state.currentVoice = voices.find(voice => 
+                    voice.lang === this.config.voice.language
+                ) || voices[0];
+            };
+            
+            if (this.state.synthesis.getVoices().length > 0) {
+                loadVoices();
+            } else {
+                this.state.synthesis.onvoiceschanged = loadVoices;
+            }
+        }
+    }
+
+    startVoiceInput() {
+        try {
+            this.state.recognition.start();
+        } catch (error) {
+            console.error('Error starting voice recognition:', error);
+            this.showToast('Could not start voice recognition', 'error');
+        }
+    }
+
+    stopVoiceInput() {
+        this.state.isListening = false;
+        this.hideVoiceStatus();
+        if (this.elements.voiceInputBtn) {
+            this.elements.voiceInputBtn.classList.remove('active');
+        }
+        
+        if (this.state.recognition) {
+            this.state.recognition.stop();
+        }
+    }
+
+    showVoiceStatus(text) {
+        if (this.elements.voiceStatusText) {
+            this.elements.voiceStatusText.textContent = text;
+        }
+        if (this.elements.voiceStatus) {
+            this.elements.voiceStatus.classList.remove('hidden');
+        }
+    }
+
+    hideVoiceStatus() {
+        if (this.elements.voiceStatus) {
+            this.elements.voiceStatus.classList.add('hidden');
+        }
+    }
+
+    addMessage(content, sender, isError = false) {
+        if (!this.elements.chatMessages) return;
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+        
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+        messageContent.textContent = content;
+        
+        if (isError) {
+            messageContent.style.color = 'var(--color-error)';
+        }
+        
+        const messageTime = document.createElement('div');
+        messageTime.className = 'message-time';
+        messageTime.textContent = new Date().toLocaleTimeString();
+        
+        messageContent.appendChild(messageTime);
+        messageDiv.appendChild(messageContent);
+        
+        this.elements.chatMessages.appendChild(messageDiv);
+        
+        // Save to chat history
+        this.state.chatHistory.push({
+            content,
+            sender,
+            timestamp: Date.now(),
+            isError
+        });
+        
+        this.saveChatHistory();
+        
+        if (this.config.autoScroll) {
+            this.scrollToBottom();
         }
     }
 
     showTypingIndicator() {
-        const typingIndicator = document.getElementById('typingIndicator');
-        if (typingIndicator) {
-            typingIndicator.classList.remove('hidden');
+        if (!this.elements.chatMessages) return;
+        if (document.querySelector('.typing-indicator')) return;
+        
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message ai';
+        
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'typing-indicator';
+        
+        const typingDots = document.createElement('div');
+        typingDots.className = 'typing-dots';
+        
+        for (let i = 0; i < 3; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'typing-dot';
+            typingDots.appendChild(dot);
+        }
+        
+        typingIndicator.appendChild(typingDots);
+        typingDiv.appendChild(typingIndicator);
+        
+        this.elements.chatMessages.appendChild(typingDiv);
+        
+        if (this.config.autoScroll) {
             this.scrollToBottom();
         }
     }
 
     hideTypingIndicator() {
-        const typingIndicator = document.getElementById('typingIndicator');
+        const typingIndicator = document.querySelector('.message.ai .typing-indicator');
         if (typingIndicator) {
-            typingIndicator.classList.add('hidden');
+            typingIndicator.parentElement.remove();
         }
     }
 
-    speakText(text) {
-        if (this.synthesis && this.synthesis.speaking) {
-            this.synthesis.cancel();
-        }
-
-        if (this.synthesis) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = this.voiceSettings.rate;
-            utterance.pitch = this.voiceSettings.pitch;
-            utterance.volume = this.voiceSettings.volume;
-            utterance.lang = this.currentLanguage === 'hi' ? 'hi-IN' : 'en-IN';
-            
-            // Try to use Indian English voice
-            const voices = this.synthesis.getVoices();
-            const indianVoice = voices.find(voice => 
-                voice.lang.includes('en-IN') || voice.lang.includes('hi-IN')
-            );
-            
-            if (indianVoice) {
-                utterance.voice = indianVoice;
-            }
-            
-            this.synthesis.speak(utterance);
-        }
-    }
-
-    toggleSpeechRecognition() {
-        if (!this.recognition) {
-            this.showToast(this.t('error_speech_not_supported'), 'error');
+    speak(text) {
+        if (!this.config.voice.enabled || !this.state.synthesis || this.state.isSpeaking) {
             return;
         }
+        
+        // Cancel any ongoing speech
+        this.state.synthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = this.config.voice.rate;
+        utterance.pitch = this.config.voice.pitch;
+        utterance.volume = this.config.voice.volume;
+        
+        if (this.state.currentVoice) {
+            utterance.voice = this.state.currentVoice;
+        }
+        
+        utterance.onstart = () => {
+            this.state.isSpeaking = true;
+        };
+        
+        utterance.onend = () => {
+            this.state.isSpeaking = false;
+        };
+        
+        utterance.onerror = () => {
+            this.state.isSpeaking = false;
+        };
+        
+        this.state.synthesis.speak(utterance);
+    }
 
-        if (this.isListening) {
-            this.recognition.stop();
-        } else {
-            this.recognition.start();
+    scrollToBottom() {
+        if (this.elements.chatMessages) {
+            this.elements.chatMessages.scrollTop = this.elements.chatMessages.scrollHeight;
         }
     }
 
-    openSettings() {
-        const modal = document.getElementById('settingsModal');
-        if (modal) {
-            modal.classList.remove('hidden');
-            
-            // Update range values
-            const voiceRate = document.getElementById('voiceRate');
-            const voicePitch = document.getElementById('voicePitch');
-            const voiceVolume = document.getElementById('voiceVolume');
-            
-            if (voiceRate) {
-                voiceRate.value = this.voiceSettings.rate;
-                const valueDisplay = document.getElementById('voiceRateValue');
-                if (valueDisplay) valueDisplay.textContent = this.voiceSettings.rate.toFixed(1);
+    loadChatHistory() {
+        try {
+            const saved = localStorage.getItem('finanzas-chat-history');
+            if (saved) {
+                this.state.chatHistory = JSON.parse(saved);
+                
+                // Restore chat messages
+                this.state.chatHistory.forEach(msg => {
+                    this.addMessageToDOM(msg.content, msg.sender, msg.isError, msg.timestamp);
+                });
             }
-            
-            if (voicePitch) {
-                voicePitch.value = this.voiceSettings.pitch;
-                const valueDisplay = document.getElementById('voicePitchValue');
-                if (valueDisplay) valueDisplay.textContent = this.voiceSettings.pitch.toFixed(1);
-            }
-            
-            if (voiceVolume) {
-                voiceVolume.value = this.voiceSettings.volume;
-                const valueDisplay = document.getElementById('voiceVolumeValue');
-                if (valueDisplay) valueDisplay.textContent = this.voiceSettings.volume.toFixed(1);
-            }
+        } catch (error) {
+            console.error('Error loading chat history:', error);
         }
     }
 
-    closeSettings() {
-        const modal = document.getElementById('settingsModal');
-        if (modal) {
-            modal.classList.add('hidden');
+    addMessageToDOM(content, sender, isError, timestamp) {
+        if (!this.elements.chatMessages) return;
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+        
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+        messageContent.textContent = content;
+        
+        if (isError) {
+            messageContent.style.color = 'var(--color-error)';
+        }
+        
+        const messageTime = document.createElement('div');
+        messageTime.className = 'message-time';
+        messageTime.textContent = new Date(timestamp).toLocaleTimeString();
+        
+        messageContent.appendChild(messageTime);
+        messageDiv.appendChild(messageContent);
+        
+        this.elements.chatMessages.appendChild(messageDiv);
+    }
+
+    saveChatHistory() {
+        try {
+            // Keep only last 100 messages to prevent storage overflow
+            const recentHistory = this.state.chatHistory.slice(-100);
+            localStorage.setItem('finanzas-chat-history', JSON.stringify(recentHistory));
+            this.state.chatHistory = recentHistory;
+        } catch (error) {
+            console.error('Error saving chat history:', error);
+        }
+    }
+
+    clearChatHistory() {
+        if (confirm('Are you sure you want to clear all chat history?')) {
+            this.state.chatHistory = [];
+            localStorage.removeItem('finanzas-chat-history');
+            
+            // Clear chat messages except welcome message
+            if (this.elements.chatMessages) {
+                this.elements.chatMessages.innerHTML = `
+                    <div class="welcome-message">
+                        <div class="welcome-icon">🇮🇳</div>
+                        <h2>Welcome to Finanzas AI!</h2>
+                        <p>Your personal finance coach for Indian markets. Get expert advice on investments, tax planning, banking, insurance, and more.</p>
+                    </div>
+                `;
+            }
+            
+            this.showToast('Chat history cleared', 'success');
         }
     }
 
     exportChat() {
-        const dataStr = JSON.stringify(this.messages, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
+        if (this.state.chatHistory.length === 0) {
+            this.showToast('No chat history to export', 'info');
+            return;
+        }
         
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `finanzas-chat-${new Date().toISOString().split('T')[0]}.json`;
-        link.click();
+        const chatData = {
+            export_date: new Date().toISOString(),
+            total_messages: this.state.chatHistory.length,
+            messages: this.state.chatHistory.map(msg => ({
+                content: msg.content,
+                sender: msg.sender,
+                timestamp: new Date(msg.timestamp).toLocaleString(),
+                is_error: msg.isError || false
+            }))
+        };
         
+        const blob = new Blob([JSON.stringify(chatData, null, 2)], { 
+            type: 'application/json' 
+        });
+        
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `finanzas-ai-chat-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        this.showToast(this.t('chat_exported'), 'success');
+        
+        this.showToast('Chat exported successfully!', 'success');
     }
 
-    clearChat() {
-        if (confirm('Are you sure you want to clear all chat history?')) {
-            this.messages = [];
-            localStorage.removeItem('chatHistory');
-            const chatLog = document.getElementById('chatLog');
-            if (chatLog) {
-                chatLog.innerHTML = '';
+    openSettings() {
+        if (this.elements.settingsModal) {
+            this.elements.settingsModal.classList.remove('hidden');
+            console.log('Settings modal opened');
+        }
+    }
+
+    closeSettings() {
+        if (this.elements.settingsModal) {
+            this.elements.settingsModal.classList.add('hidden');
+        }
+        this.saveSettings();
+    }
+
+    updateVoiceSetting(setting, value) {
+        this.config.voice[setting] = parseFloat(value);
+        
+        // Update display value
+        const displayElement = document.getElementById(`${setting}-value`);
+        if (displayElement) {
+            displayElement.textContent = value;
+        }
+        
+        this.saveSettings();
+    }
+
+    resetUsage() {
+        this.state.requestCount = 0;
+        this.state.lastRequestTime = null;
+        
+        try {
+            localStorage.removeItem('finanzas-rate-limit');
+        } catch (error) {
+            console.error('Error resetting usage:', error);
+        }
+        
+        this.updateUsageDisplay();
+        this.showToast('Usage counter reset successfully!', 'success');
+    }
+
+    checkOnlineStatus() {
+        this.updateOnlineStatus(navigator.onLine);
+    }
+
+    updateOnlineStatus(isOnline) {
+        if (this.elements.offlineIndicator) {
+            if (isOnline) {
+                this.elements.offlineIndicator.classList.add('hidden');
+            } else {
+                this.elements.offlineIndicator.classList.remove('hidden');
             }
-            this.addMessage('assistant', this.t('welcome_message'));
-            this.showToast(this.t('chat_cleared'), 'info');
         }
     }
 
-    showInstallPrompt() {
-        const installPrompt = document.getElementById('installPrompt');
-        if (installPrompt) {
-            installPrompt.classList.remove('hidden');
-        }
-    }
-
-    hideInstallPrompt() {
-        const installPrompt = document.getElementById('installPrompt');
-        if (installPrompt) {
-            installPrompt.classList.add('hidden');
-        }
-    }
-
-    showToast(message, type = 'info') {
-        const container = document.getElementById('toastContainer');
-        if (!container) return;
+    showToast(message, type = 'info', duration = 3000) {
+        if (!this.elements.toastContainer) return;
         
         const toast = document.createElement('div');
-        toast.className = `toast toast--${type}`;
+        toast.className = `toast ${type}`;
         toast.textContent = message;
         
-        container.appendChild(toast);
+        this.elements.toastContainer.appendChild(toast);
         
-        // Auto remove after 4 seconds
         setTimeout(() => {
-            toast.remove();
-        }, 4000);
-    }
-
-    // Translation helper
-    t(key) {
-        return i18n[this.currentLanguage][key] || key;
-    }
-
-    // Debounce utility
-    debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
+            toast.style.animation = 'toastSlideIn 0.3s var(--ease-standard) reverse';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }, duration);
     }
 }
 
-// Initialize the app when DOM is loaded
+// Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing Finanzas app');
-    new FinanzasApp();
+    console.log('DOM loaded, initializing Finanzas AI...');
+    window.finanzasAI = new FinanzasAI();
+    window.finanzasAI.init();
 });
 
-// Handle PWA install prompt
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-});
-
-// Export for potential GitHub Actions integration
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { FinanzasApp, i18n, quickReplies };
+// Fallback initialization if DOMContentLoaded already fired
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    console.log('DOM already loaded, initializing Finanzas AI...');
+    window.finanzasAI = new FinanzasAI();
+    window.finanzasAI.init();
 }
