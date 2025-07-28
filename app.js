@@ -6,7 +6,7 @@ window.CONFIG = {
     GEMINI_API_KEY: 'YOUR_GEMINI_API_KEY_HERE', // This gets replaced by GitHub Actions
     MODEL: 'gemini-1.5-flash',
     TIMEOUT_MS: 30000,
-    API_ENDPOINT: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'
+    API_ENDPOINT: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
 };
 
 // Internationalization data
